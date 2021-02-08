@@ -1,0 +1,168 @@
+[virtual_sdcard]
+path: ~/gcode_files
+
+[display_status] 
+ 
+[pause_resume] 
+
+
+[gcode_macro START_PRINT]
+default_parameter_BED_TEMP: 60
+default_parameter_EXTRUDER_TEMP: 190
+gcode:
+    # Start bed heating
+    M140 S{BED_TEMP}
+    # Use absolute coordinates
+    G90
+    # Reset the G-Code Z offset (adjust Z offset if needed)
+    SET_GCODE_OFFSET Z=0
+    # Home the printer
+    G28
+    # Move the nozzle near the bed
+    G1 Z20 F3000
+    # Move the nozzle very close to the bed
+    G1 Z10 F300
+    # Wait for bed to reach temperature
+    M190 S{BED_TEMP}
+    # Set and wait for nozzle to reach temperature
+    M109 S{EXTRUDER_TEMP}
+	
+[output_pin _BEEPER_pin]
+pin: PC5
+pwm: true
+value: 1
+shutdown_value: 0
+cycle_time: 0.001
+scale: 1000
+
+[gcode_macro M300]
+default_parameter_S=1000
+default_parameter_P=100
+gcode:  SET_PIN PIN=_BEEPER_pin VALUE={S}
+        G4 P{P}
+        SET_PIN PIN=_BEEPER_pin VALUE=0
+
+[gcode_macro END_PRINT]
+gcode:
+    # Turn off bed, extruder, and fan
+    M140 S0
+    M104 S0
+    M106 S0
+    # Retracting filament
+    G91
+    G1 X0 Y0 E-3 F300
+    # Raise nozzle by 20mm
+    G1 Z20 F3000
+    G90
+    # Disable steppers
+    M84
+
+[gcode_macro G29]
+gcode:
+        G28
+        G1 Z10 F600
+        BED_MESH_CALIBRATE
+        G0 X10 Y10 Z10 F3000
+
+[gcode_macro load_filament]
+gcode:
+ G91
+ G1 E50 F90
+ G90
+ M400
+
+
+[gcode_macro unload_filament]
+gcode:
+ G91
+ G1 E10
+ G90
+ M400
+ G91 
+ G1E-50 F300
+ G90
+ M400
+        
+[gcode_macro slow_fan]
+gcode:
+  M106 S{ printer.fan.speed * 0.9 * 233}
+  
+
+[gcode_macro PAUSE]
+rename_existing: BASE_PAUSE
+default_parameter_X: 20    #edit to your park position
+default_parameter_Y: 170    #edit to your park position
+default_parameter_Z: 10     #edit to your park position
+default_parameter_E: 1      #edit to your retract length
+gcode:
+    SAVE_GCODE_STATE NAME=PAUSE_state
+    BASE_PAUSE
+    G91
+    G1 E-{1} F2100
+    G1 Z{10}
+    G90
+    G1 X{20} Y{170} F6000
+ 
+[gcode_macro RESUME]
+rename_existing: BASE_RESUME
+default_parameter_E: 1      #edit to your retract length
+gcode:
+    G91
+    G1 E{E} F2100
+    G90
+    RESTORE_GCODE_STATE NAME=PAUSE_state MOVE=1
+    BASE_RESUME
+ 
+[gcode_macro CANCEL_PRINT]
+rename_existing: BASE_CANCEL_PRINT
+gcode:
+    TURN_OFF_HEATERS
+    CLEAR_PAUSE
+    SDCARD_RESET_FILE
+    BASE_CANCEL_PRINT 
+    
+[gcode_macro DISABLE_STEPPERS]
+#name: Steppers off
+gcode:
+    M84
+    M18
+ 
+
+[temperature_sensor MCU]
+sensor_type: temperature_mcu
+
+[temperature_sensor RPi]
+sensor_type: rpi_temperature
+
+
+[output_pin LED]
+pin: PA8
+#pwm: true
+value: 0
+#cycle_time: 0.010
+
+
+[gcode_macro LED_OFF]
+gcode:  SET_PIN PIN=LED VALUE=0
+
+#[gcode_macro LEDMIN]
+#gcode:  SET_PIN PIN=LED_pin VALUE=.5
+
+[gcode_macro LED_ON]
+gcode:  SET_PIN PIN=LED VALUE=1
+
+[output_pin caselight]
+pin: PB2
+#pwm: true
+value: 0
+#cycle_time: 0.010
+
+
+[gcode_macro LED_OFF]
+gcode:  SET_PIN PIN=caselight VALUE=0
+
+#[gcode_macro LEDMIN]
+#gcode:  SET_PIN PIN=LED_pin VALUE=.5
+
+[gcode_macro LED_ON]
+gcode:  SET_PIN PIN=caselight VALUE=1

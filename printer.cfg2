@@ -1,0 +1,139 @@
+# This file contains common pin mappings for MKS Robin Nano (v1.2.004)
+# boards. To use this config, the firmware should be compiled for the
+# STM32F103. When running "make menuconfig", enable "extra low-level
+# configuration setup", select the 28KiB bootloader, disable "USB for
+# communication", and select USART3 for the "Serial Port".
+
+# Note that the "make flash" command does not work with MKS Robin
+# boards. After running "make", run the following command:
+#   ./scripts/update_mks_robin.py out/klipper.bin out/Robin_nano.bin
+# Copy the file out/Robin_nano.bin to an SD card and then restart the
+# printer with that SD card.
+# Kingroon KP3S _ Eric R 
+
+
+[stepper_x]
+step_pin: PE3
+dir_pin: PE2
+enable_pin: !PE4
+rotation_distance: 40 # 40
+microsteps: 16
+endstop_pin: ^!PA15
+position_endstop: 0
+position_max: 180
+homing_speed: 50
+
+[stepper_y]
+step_pin: PE0
+dir_pin: PB9
+enable_pin: !PE1
+rotation_distance: 40 # 40
+microsteps: 16
+endstop_pin: ^!PA12
+position_endstop: 0
+position_max: 180
+homing_speed: 50
+
+[stepper_z]
+step_pin: PB5
+dir_pin: !PB4
+enable_pin: !PB8
+rotation_distance: 8
+microsteps: 16
+endstop_pin: probe:z_virtual_endstop #defines the Z endstop as the BLtouch
+position_min: -5 #lets us go lower to adjust the Z offset
+position_max: 180
+homing_speed: 10
+homing_retract_dist: 5.0
+
+[extruder]
+step_pin: PD6
+dir_pin: !PD3
+enable_pin: !PB3
+rotation_distance: 8.10126 # 8.080808
+microsteps: 16
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: PC3
+sensor_type: ATC Semitec 104GT-2
+sensor_pin: PC1
+#control: pid
+#pid_Kp: 14.669
+#pid_Ki: 0.572
+#pid_Kd: 94.068
+min_temp: 0
+max_temp: 250
+
+[heater_bed]
+heater_pin: PA0
+sensor_type: EPCOS 100K B57560G104F
+sensor_pin: PC0
+#control: pid
+#pid_Kp: 325.10
+#pid_Ki: 63.35
+#pid_Kd: 417.10
+min_temp: 0
+max_temp: 130
+
+[bed_screws]
+screw1: 24,24
+screw2: 168,24
+screw3: 168,168
+screw4: 24,168
+
+[probe]
+pin: ^!PA11
+x_offset: -40
+y_offset: 0
+z_offset: 1.01
+speed: 20
+
+[bed_mesh]
+speed: 120
+horizontal_move_z: 5
+mesh_min: 10,20
+mesh_max: 132,175
+probe_count: 3,3 #performs a 3x3 bed leveling test 
+fade_start: 1
+fade_end: 10
+
+
+#  Visual Examples:
+#   rectangular bed, probe_count = 3,3:
+#               x---x---x (max_point)
+#               |
+#               x---x---x
+#                       |
+#   (min_point) x---x---x
+
+[safe_z_home]
+home_xy_position: 121,105
+z_hop: 10
+
+[fan]
+pin: PB1
+
+[heater_fan Hotend_Fan]
+pin: PB0
+heater: extruder
+heater_temp: 50.0
+fan_speed: 1.0
+
+[mcu]
+serial: /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+baud: 250000
+restart_method: command
+
+[printer]
+kinematics: cartesian
+max_velocity: 220
+max_accel: 3500
+max_z_velocity: 25
+max_z_accel: 100
+#max_accel: 7000 # klipper ringing test
+#max_accel_to_decel: 7000
+;max_accel_to_decel: 7000 # klipper ringing test 
+square_corner_velocity: 5.0
+
+[static_digital_output display_reset]
+pins: !PC6, !PD13
